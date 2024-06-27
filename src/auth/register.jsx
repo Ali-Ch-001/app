@@ -2,16 +2,15 @@ import { useState } from "react";
 
 function Register() {
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const userData = { username, email, password };
+    const userData = { username, password };
 
-    fetch("http://localhost:5000/api/register", {
+    fetch("http://localhost:3001/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -28,7 +27,7 @@ function Register() {
       .then(() => {
         setSuccess("Registration successful");
         setUsername('');
-        setEmail('');
+      
         setPassword('');
       })
       .catch((error) => {
@@ -57,21 +56,6 @@ function Register() {
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="email"
-              className="block text-gray-700 text-sm font-bold mb-2"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="mb-6">

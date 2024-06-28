@@ -1,34 +1,30 @@
-import React, { useState,useEffect } from 'react';
-
-
+import React, { useState } from 'react';
+import authService from '../services/authservice'; // Adjust path as needed
+import { jwtDecode } from 'jwt-decode';
 
 
 const LoginForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
-  useEffect(() => {
-    const accessToken = localStorage.getItem('token');
-    if (accessToken) {
-      window.location.href = '/'; // Redirect to protected route if accessToken exists
-    }
-  }, [])
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-    try {
-      const response = await fetch('http://localhost:3001/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-      const accessToken = await response.json();
-     console.log(accessToken)
-      localStorage.setItem('token', accessToken.accesstoken);
-      localStorage.setItem('age', accessToken.maxAge);
-    window.location.href = '/';
-    } catch (error) {
-      setError(error.message);
-    }
+    
+      const response = await authService.login(username, password);
+     const accessToken = response["accesstoken"];
+     
+   console.log(jwtDecode(accessToken));
+      if (accessToken) {
+        localStorage.setItem('token', accessToken);
+        localStorage.setItem('isAuthenticated','True') // Assuming accessToken is a string
+        // Optionally, set other token-related data to localStorage
+
+      window.location.href = '/'; // Redirect to protected route if accessToken exists
+      } else {
+        setError('Login failed. Please check your credentials.');
+      }
+    
   };
 
  

@@ -31,7 +31,7 @@ app.post("/register", async (req, res) => {
       password: hash,
     });
    
-    const token = createTokens
+  
     res.json("USER REGISTERED");
   } catch (err) {
     console.error(err);
@@ -56,8 +56,11 @@ app.post("/login", async (req, res) => {
     if (!match) {
       return res.status(400).json({ error: "Wrong Username and Password Combination!" });
     }
-
-    const accessToken = createTokens;
+    const users={
+      username:user.username,
+      id:user.id
+    }
+    const accessToken = createTokens(users);
     res.cookie("access-token", accessToken, {
       maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
       httpOnly: true,

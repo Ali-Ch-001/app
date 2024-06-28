@@ -1,60 +1,28 @@
-// authcontext.js
-import React, { createContext, useState, useEffect,useContext } from 'react';
-import { jwtDecode } from 'jwt-decode';
-import authService from '../services/authservice';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [authState, setAuthState] = useState({
-    isAuthenticated: false,
-    user: null,
+    isAuthenticated: localStorage.getItem('isAuthenticated') === 'true',
   });
 
-  useEffect(() => {
-    const accessToken = localStorage.getItem('token');
-    if (accessToken) {
-      try { 
-         const decoded = jwtDecode(JSON.parse(accessToken));
-        setAuthState({
-          isAuthenticated: true,
-          user: decoded,
-        });
-      } catch (error) {
-    
-        setAuthState({
-          isAuthenticated: false,
-          user: null,
-        });
-      }
-    }
-  }, []);
-
-  const login = async (username, password) => {
-    try {
-      const response = await authService.login(username, password);
-      const { accessToken } = response;
-      localStorage.setItem('token', JSON.stringify(accessToken));
-      const decoded = jwtDecode(accessToken);
-      setAuthState({
-        isAuthenticated: true,
-        user: decoded,
-      });
-    } catch (error) {
-      console.error('Login failed:', error);
-      throw new Error('Invalid username or password');
-    }
+  const login = () => {
+    localStorage.setItem('isAuthenticated', 'true');
+    setAuthState({ isAuthenticated: true });
   };
 
   const logout = () => {
-    authService.logout();
-    localStorage.removeItem('token');
-    localStorage.removeItem('maxAge');
-    setAuthState({
-      isAuthenticated: false,
-      user: null,
-    });
+    localStorage.removeItem('isAuthenticated');
+    setAuthState({ isAuthenticated: false });
   };
+
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    if (authState.isAuthenticated !== isAuthenticated) {
+      setAuthState({ isAuthenticated });
+    }
+  }, [authState.isAuthenticated]);
 
   return (
     <AuthContext.Provider value={{ authState, login, logout }}>
@@ -62,10 +30,13 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-      throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
+  const { authState, login, logout } = useContext(AuthContext);
+
+  const isAuthenticated = () => {
+    return authState.isAuthenticated;
   };
+
+  return { authState, login, logout, isAuthenticated };
+};

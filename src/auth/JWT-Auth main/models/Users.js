@@ -1,24 +1,25 @@
-module.exports = (sequelize, DataTypes) => {
-  const Users = sequelize.define("Users", {
-    username: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    createdAt:{
-      type:DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt:{
-      type:DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    }
-  });
-  return Users;
-};
+const mongoose = require('mongoose');
+
+const UserSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Users = mongoose.model('Users', UserSchema);
+
+module.exports = Users;

@@ -1,11 +1,23 @@
 const express = require("express");
 const app = express();
-const db = require("./models");
-const { Users } = require("./models");
-
+const mongoose = require("mongoose");
+const Users = require("./models/Users");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const { createTokens, validateToken } = require("./JWT");
+const config = require('./config/config.json');
+
+const env = process.env.NODE_ENV || 'development';
+const mongoURI = config[env].uri;
+
+mongoose.connect(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log(`Connected to MongoDB: ${env} database`);
+}).catch((err) => {
+  console.error(`Error connecting to MongoDB: ${err.message}`);
+});
 
 app.use(express.json());
 app.use(cookieParser());
@@ -20,33 +32,30 @@ app.use((req, res, next) => {
 
 app.post("/", (req, res) => {
   console.log("Server running");
+  res.send("Server is up and running");
 });
 
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
   try {
     const hash = await bcrypt.hash(password, 10);
-    await Users.create({
+    const user = new Users({
       username: username,
       password: hash,
     });
-   
-    const token = createTokens
+    await user.save();
     res.json("USER REGISTERED");
   } catch (err) {
     console.error(err);
     res.status(400).json({ error: "Registration failed" });
   }
 });
-app.post("/", (req, res) => {
-  console.log("Server running");
-  res.send("Server is up and running");
-});
+
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const user = await Users.findOne({ where: { username: username } });
+    const user = await Users.findOne({ username: username });
     if (!user) {
       return res.status(400).json({ error: "User Doesn't Exist" });
     }
@@ -57,7 +66,7 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Wrong Username and Password Combination!" });
     }
 
-    const accessToken = createTokens;
+    const accessToken = createTokens(user);
     res.cookie("access-token", accessToken, {
       maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
       httpOnly: true,
@@ -78,8 +87,6 @@ app.get("/profile", validateToken, (req, res) => {
   res.json("profile");
 });
 
-db.sequelize.sync().then(() => {
-  app.listen(3001, () => {
-    console.log("SERVER RUNNING ON PORT 3001");
-  });
+app.listen(3001, () => {
+  console.log("SERVER RUNNING ON PORT 3001");
 });

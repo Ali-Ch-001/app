@@ -19,13 +19,17 @@ const login = (username, password) => {
       username,
       password,
     })
+ 
     .then((response) => {
-      if (response.data.accessToken) {
-        localStorage.setItem('token', JSON.stringify(response.data.accessToken)); // Store as string
+       // Log the response data for debugging
+      if (response.data) {
+        localStorage.setItem('token', JSON.stringify(response.data)); // Store as string
       }
-      return response.data;
-    });
+      return response.data; // Make sure response.data or a relevant part of it contains what you expect
+    })
+   
 };
+
 
 const logout = () => {
   localStorage.removeItem("token");
